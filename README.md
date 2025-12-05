@@ -1,3 +1,5 @@
+```bash
+
 🟦 ShareNSpare — Monorepo Technique (Prototype + App)
 
 Bienvenue dans le projet technique ShareNSpare.
@@ -91,6 +93,8 @@ sharenspare-app/
 ├── README.md           # Ce fichier
 └── .gitignore          # Fichiers ignorés par Git
 
+
+
 🧩 3. Installation (première fois)
 📌 Prérequis
 
@@ -143,18 +147,19 @@ pnpm dev
 Next.js écoute généralement sur :
 👉 http://localhost:3000
 
-🧑‍🤝‍🧑 4. Répartition des responsabilités (TÉO / KEVIN)
-TÉO :
+🧑‍🤝‍🧑 4. Répartition des responsabilités ( TEO / KEVIN)
+
+TEO :
 
 Backend :
 
-Auth (login / change password)
+Auth ( login / change password)
 
-Organisations (settings)
+Organisations ( settings)
 
-Catalogue matériel (CRUD + upload)
+Catalogue matériel ( CRUD + upload)
 
-Pricing TTC/HT/TVA (8.1%)
+Pricing TTC/HT/TVA ( 8.1%)
 
 Audit
 
@@ -200,11 +205,11 @@ Catégories & Tags
 
 Disponibilités + calendrier
 
-Workflow demandes (create, approve, start, close)
+Workflow demandes ( create, approve, start, close)
 
 Emails
 
-PDF (devis/factures)
+PDF ( devis/factures)
 
 Frontend :
 
@@ -224,9 +229,9 @@ future ui-native
 
 Infra :
 
-seed (données de démo)
+seed ( données de démo)
 
-🔥 5. Comment contribuer (workflow Git simple et pro)
+🔥 5. Comment contribuer ( workflow Git simple et pro)
 🚫 NE JAMAIS travailler sur main.
 
 Toujours créer une branche.
@@ -262,8 +267,8 @@ Kevin valide les PR de Téo
 Téo valide celles de Kevin
 
 8️⃣ Merge une fois approuvée
-9️⃣ Supprimer la branche (GitHub propose automatiquement)
-📝 6. Template de Pull Request (PR)
+9️⃣ Supprimer la branche ( GitHub propose automatiquement)
+📝 6. Template de Pull Request ( PR)
 
 Crée le fichier :
 .github/pull_request_template.md
@@ -327,3 +332,5 @@ préparer l’app mobile plus tard
 garder une cohérence totale dans le design et le code
 
 On ship, on teste, on améliore. 🚀
+
+```
