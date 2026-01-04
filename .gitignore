@@ -45,3 +45,6 @@ coverage/
 # Misc
 *.tsbuildinfo
 .cache/
+
+# Infrastructure
+infra/data/
