@@ -5,13 +5,24 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
-import { UserPlus, Mail, Lock, User, Phone, Building, AlertCircle } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Phone, Building, AlertCircle, ShieldCheck } from "lucide-react";
 
 function RegisterForm() {
   const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get("token");
+
+  if (!invitationToken) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200 text-center">
+        <ShieldCheck className="w-12 h-12 text-green-primary mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Accès sur invitation</h1>
+        <p className="text-gray-600 mb-6">ShareNSpare est réservé aux festivals et professionnels invités. Pour obtenir un accès, contactez-nous.</p>
+        <Link href="/login" className="text-green-primary font-semibold hover:underline text-sm">Déjà un compte ? Se connecter</Link>
+      </div>
+    );
+  }
 
   const [form, setForm] = useState({ email: "", password: "", firstName: "", lastName: "", phone: "", organisationName: "" });
   const [error, setError] = useState("");

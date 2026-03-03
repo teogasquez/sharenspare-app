@@ -104,20 +104,7 @@ public class AuthController : ControllerBase
         }
         else
         {
-            // Self-registration (particulier only)
-            role = UserRole.Particulier;
-            var orgName = string.IsNullOrWhiteSpace(request.OrganisationName)
-                ? $"{request.FirstName} {request.LastName}"
-                : request.OrganisationName;
-
-            organisation = new Organisation
-            {
-                Id = Guid.NewGuid(),
-                Name = orgName,
-                Type = OrganisationType.Particulier,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Organisations.Add(organisation);
+            return BadRequest(new { message = "L'inscription est sur invitation uniquement." });
         }
 
         await _context.SaveChangesAsync();
