@@ -7,13 +7,15 @@ public class StorageService
 {
     private readonly AmazonS3Client _client;
     private readonly string _bucket;
+    private readonly string _publicUrl;
 
     public StorageService()
     {
-        var endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT") ?? "http://localhost:9000";
-        var accessKey = Environment.GetEnvironmentVariable("MINIO_ROOT_USER") ?? "minioadmin";
-        var secretKey = Environment.GetEnvironmentVariable("MINIO_ROOT_PASSWORD") ?? "minioadmin";
-        _bucket = Environment.GetEnvironmentVariable("MINIO_BUCKET") ?? "sharenspare-uploads";
+        var endpoint  = Environment.GetEnvironmentVariable("STORAGE_ENDPOINT")   ?? "http://localhost:9000";
+        var accessKey = Environment.GetEnvironmentVariable("STORAGE_ACCESS_KEY") ?? "minioadmin";
+        var secretKey = Environment.GetEnvironmentVariable("STORAGE_SECRET_KEY") ?? "minioadmin";
+        _bucket    = Environment.GetEnvironmentVariable("STORAGE_BUCKET")     ?? "sharenspare-uploads";
+        _publicUrl = Environment.GetEnvironmentVariable("STORAGE_PUBLIC_URL") ?? $"{endpoint}/{_bucket}";
 
         var config = new AmazonS3Config
         {
@@ -35,7 +37,6 @@ public class StorageService
         {
             await _client.PutBucketAsync(new PutBucketRequest { BucketName = _bucket });
 
-            // Set bucket policy to public read
             var policy = $$"""
             {
                 "Version": "2012-10-17",
@@ -55,6 +56,10 @@ public class StorageService
                 Policy = policy
             });
         }
+        catch
+        {
+            // R2 buckets are created via the Cloudflare dashboard — ignore errors here
+        }
     }
 
     public async Task<string> UploadAsync(Stream stream, string fileName, string contentType)
@@ -69,14 +74,12 @@ public class StorageService
             ContentType = contentType
         });
 
-        var endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT") ?? "http://localhost:9000";
-        return $"{endpoint}/{_bucket}/{key}";
+        return $"{_publicUrl.TrimEnd('/')}/{key}";
     }
 
     public async Task DeleteAsync(string url)
     {
-        var endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT") ?? "http://localhost:9000";
-        var prefix = $"{endpoint}/{_bucket}/";
+        var prefix = $"{_publicUrl.TrimEnd('/')}/";
         if (!url.StartsWith(prefix)) return;
 
         var key = url[prefix.Length..];

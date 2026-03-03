@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { admin, type UserDto, type OrganisationDto, type InvitationDto, type AdminStatsDto } from "@/lib/api";
-import { ShieldCheck, Users, Building, Mail, Plus, Check, X, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp } from "lucide-react";
+import { ShieldCheck, Users, Building, Mail, Plus, Check, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp, Copy } from "lucide-react";
 
 type Tab = "stats" | "users" | "organisations" | "invitations";
 
@@ -25,6 +25,14 @@ export default function AdminPage() {
   const [invRole, setInvRole] = useState("Festival");
   const [invSubmitting, setInvSubmitting] = useState(false);
   const [invError, setInvError] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyInviteLink = (inv: InvitationDto) => {
+    const url = `${window.location.origin}/register?token=${inv.token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(inv.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) { router.push("/login"); return; }
@@ -294,9 +302,9 @@ export default function AdminPage() {
                           <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
                           <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Organisation</th>
                           <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Rôle</th>
-                          <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Token</th>
                           <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Statut</th>
                           <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Expire</th>
+                          <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Lien</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
@@ -306,9 +314,6 @@ export default function AdminPage() {
                             <td className="px-6 py-4 text-sm text-gray-600">{inv.organisationName}</td>
                             <td className="px-6 py-4">
                               <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">{inv.role}</span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <code className="text-xs bg-gray-100 px-2 py-1 rounded">{inv.token.substring(0, 12)}...</code>
                             </td>
                             <td className="px-6 py-4">
                               {inv.usedAt ? (
@@ -321,6 +326,14 @@ export default function AdminPage() {
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-500">
                               {new Date(inv.expiresAt).toLocaleDateString("fr-CH")}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {!inv.usedAt && new Date(inv.expiresAt) >= new Date() && (
+                                <button onClick={() => copyInviteLink(inv)}
+                                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                  {copiedId === inv.id ? <><Check className="w-3 h-3" /> Copié !</> : <><Copy className="w-3 h-3" /> Copier le lien</>}
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}
