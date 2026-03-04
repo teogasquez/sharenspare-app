@@ -139,6 +139,44 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpPost("init-admin")]
+    public async Task<IActionResult> InitAdmin([FromBody] InitAdminRequest request)
+    {
+        var setupSecret = Environment.GetEnvironmentVariable("ADMIN_SETUP_SECRET");
+        if (string.IsNullOrEmpty(setupSecret) || request.Secret != setupSecret)
+            return Unauthorized(new { message = "Invalid setup secret" });
+
+        if (await _context.Users.AnyAsync(u => u.Role == UserRole.Admin))
+            return Conflict(new { message = "An admin account already exists" });
+
+        var adminOrg = new Organisation
+        {
+            Id = Guid.NewGuid(),
+            Name = "ShareNSpare Admin",
+            Type = OrganisationType.Pro,
+            IsVerified = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.Organisations.Add(adminOrg);
+
+        var admin = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = request.Email,
+            PasswordHash = _passwordHasher.HashPassword(request.Password),
+            FirstName = "Admin",
+            LastName = "ShareNSpare",
+            Role = UserRole.Admin,
+            OrganisationId = adminOrg.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.Users.Add(admin);
+        await _context.SaveChangesAsync();
+
+        admin.Organisation = adminOrg;
+        return Ok(new { message = "Admin account created", email = admin.Email });
+    }
+
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
