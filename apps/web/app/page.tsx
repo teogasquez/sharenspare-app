@@ -115,20 +115,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-lg font-bold text-white">Share<span className="text-orange-accent">N</span>Spare</p>
-            <div className="flex flex-wrap gap-6 text-sm justify-center">
-              <a href="/legal#conditions" className="hover:text-white transition-colors">Conditions d&apos;utilisation</a>
-              <a href="/legal#confidentialite" className="hover:text-white transition-colors">Politique de confidentialité</a>
-              <a href="/legal#mentions-legales" className="hover:text-white transition-colors">Mentions légales</a>
-            </div>
-            <p className="text-sm">&copy; 2026 ShareNSpare. Tous droits réservés.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
