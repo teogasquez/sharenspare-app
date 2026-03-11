@@ -8,6 +8,7 @@ public class Equipment
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal DailyPrice { get; set; }
+    public string? PriceTiersJson { get; set; }
     public int Quantity { get; set; } = 1;
     public EquipmentCondition Condition { get; set; } = EquipmentCondition.Bon;
     public bool IsAvailable { get; set; } = true;

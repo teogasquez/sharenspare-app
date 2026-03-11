@@ -7,7 +7,7 @@ interface AuthState {
   user: UserDto | null;
   token: string | null;
   loading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<UserDto>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
 }
@@ -32,11 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest): Promise<UserDto> => {
     const res = await auth.login(data);
     localStorage.setItem("token", res.token);
     setToken(res.token);
     setUser(res.user);
+    return res.user;
   };
 
   const register = async (data: RegisterRequest) => {

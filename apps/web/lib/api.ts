@@ -55,7 +55,7 @@ export const categories = {
 export interface EquipmentListDto { id: string; name: string; description?: string; dailyPrice: number; quantity: number; condition: string; isAvailable: boolean; categoryName: string; categorySlug: string; organisationName: string; city?: string; canton?: string; latitude?: number; longitude?: number; primaryPhotoUrl?: string; }
 export interface EquipmentPhotoDto { id: string; url: string; isPrimary: boolean; sortOrder: number; }
 export interface EquipmentDto extends Omit<EquipmentListDto, "categoryName" | "categorySlug" | "organisationName" | "primaryPhotoUrl"> { address?: string; category: CategoryDto; organisation: OrganisationDto; photos: EquipmentPhotoDto[]; createdAt: string; }
-export interface CreateEquipmentRequest { name: string; description?: string; dailyPrice: number; quantity: number; condition: string; categoryId: string; address?: string; city?: string; canton?: string; latitude?: number; longitude?: number; isAvailable?: boolean; }
+export interface CreateEquipmentRequest { name: string; description?: string; dailyPrice: number; quantity: number; condition: string; categoryId: string; address?: string; city?: string; canton?: string; latitude?: number; longitude?: number; isAvailable?: boolean; priceTiersJson?: string; }
 export interface UpdateEquipmentRequest { name?: string; description?: string; dailyPrice?: number; quantity?: number; condition?: string; categoryId?: string; isAvailable?: boolean; address?: string; city?: string; canton?: string; latitude?: number; longitude?: number; }
 
 export const equipments = {

@@ -106,9 +106,9 @@ export function Navbar() {
         <div className="md:hidden bg-white/95 backdrop-blur-sm shadow-lg mt-2 rounded-xl mx-0 absolute w-full left-0 px-5">
           <div className="px-4 py-4 space-y-3">
             {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
-            {user && navLink("/dashboard", "Dashboard")}
             {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
             {user && user.role !== "Admin" && navLink("/reservations", "Réservations")}
+            {user && user.role !== "Admin" && navLink("/dashboard", "Dashboard")}
             {user?.role === "Admin" && navLink("/admin", "Admin")}
             <hr className="my-2" />
             {user ? (

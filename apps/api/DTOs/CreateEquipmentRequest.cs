@@ -37,6 +37,8 @@ public class CreateEquipmentRequest
     public double? Longitude { get; set; }
 
     public bool IsAvailable { get; set; } = true;
+
+    public string? PriceTiersJson { get; set; }
 }
 
 public class UpdateEquipmentRequest
@@ -70,4 +72,6 @@ public class UpdateEquipmentRequest
 
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
+
+    public string? PriceTiersJson { get; set; }
 }

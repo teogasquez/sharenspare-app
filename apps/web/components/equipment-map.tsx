@@ -7,6 +7,12 @@ import "leaflet/dist/leaflet.css";
 import type { EquipmentListDto } from "@/lib/api";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const TILE_URL = MAPBOX_TOKEN
+  ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`
+  : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+const TILE_ATTRIBUTION = MAPBOX_TOKEN
+  ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
 // Inject global CSS for user location pulse animation (once)
 if (typeof window !== "undefined") {
@@ -135,9 +141,9 @@ export function EquipmentMap({ items, onRadiusSearch, onClearRadius, radiusCente
         scrollWheelZoom={true}
       >
         <TileLayer
-          url={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`}
-          tileSize={512}
-          zoomOffset={-1}
+          url={TILE_URL}
+          attribution={TILE_ATTRIBUTION}
+          {...(MAPBOX_TOKEN ? { tileSize: 512, zoomOffset: -1 } : {})}
         />
 
         <ClickHandler onRadiusSearch={onRadiusSearch} radiusKm={radiusKm} />

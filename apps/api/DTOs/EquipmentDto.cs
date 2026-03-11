@@ -6,6 +6,7 @@ public class EquipmentDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal DailyPrice { get; set; }
+    public string? PriceTiersJson { get; set; }
     public int Quantity { get; set; }
     public string Condition { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }

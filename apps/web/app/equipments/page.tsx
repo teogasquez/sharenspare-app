@@ -65,7 +65,7 @@ export default function MyEquipmentsPage() {
           <div className="text-center py-20">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-2">Aucun équipement pour le moment.</p>
-            <p className="text-gray-400 text-sm mb-6">Ajoutez votre premier matériel pour le proposer à la location.</p>
+            <p className="text-gray-400 text-sm mb-6">Votre inventaire est actuellement vide. Ajoutez vos premiers équipements pour les rendre disponibles au sein du réseau ShareNSpare.</p>
             <Link href="/equipments/new" className="bg-green-primary text-white hover:bg-green-darker py-2.5 px-6 rounded-full text-sm font-semibold transition-colors inline-flex items-center gap-2">
               <Plus className="w-4 h-4" /> Ajouter un équipement
             </Link>

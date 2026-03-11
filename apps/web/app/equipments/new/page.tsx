@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { equipments, categories, photos, type CategoryDto, type EquipmentPhotoDto } from "@/lib/api";
+import { equipments, categories, photos, type CategoryDto } from "@/lib/api";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
-import { ArrowLeft, Upload, X as XIcon, Star } from "lucide-react";
+import { ArrowLeft, Upload, X as XIcon, Plus, Trash2 } from "lucide-react";
 
 const CONDITIONS = ["Neuf", "Excellent", "Bon", "Correct", "Usé"];
+
+interface PriceTier {
+  minDays: number;
+  maxDays: number | null;
+  pricePerDay: number;
+}
+
+const DEFAULT_TIERS: PriceTier[] = [
+  { minDays: 1, maxDays: 3, pricePerDay: 0 },
+  { minDays: 4, maxDays: 7, pricePerDay: 0 },
+  { minDays: 8, maxDays: 14, pricePerDay: 0 },
+];
 
 export default function NewEquipmentPage() {
   const { user, loading: authLoading } = useAuth();
@@ -31,6 +43,13 @@ export default function NewEquipmentPage() {
   const [isAvailable, setIsAvailable] = useState(true);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [dragging, setDragging] = useState(false);
+
+  // Degressive pricing
+  const [degressiveEnabled, setDegressiveEnabled] = useState(false);
+  const [priceTiers, setPriceTiers] = useState<PriceTier[]>(DEFAULT_TIERS.map(t => ({ ...t })));
+
+  const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) { router.push("/login"); return; }
@@ -40,11 +59,42 @@ export default function NewEquipmentPage() {
     });
   }, [user, authLoading, router]);
 
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    setPendingFiles(prev => [...prev, ...Array.from(files)]);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setDragging(true); };
+  const handleDragLeave = () => setDragging(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    addFiles(e.dataTransfer.files);
+  };
+
+  const updateTier = (i: number, field: keyof PriceTier, value: string) => {
+    setPriceTiers(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value === "" ? null : Number(value) } : t));
+  };
+
+  const addTier = () => {
+    const last = priceTiers[priceTiers.length - 1];
+    const newMin = (last.maxDays ?? 14) + 1;
+    setPriceTiers(prev => [...prev, { minDays: newMin, maxDays: null, pricePerDay: 0 }]);
+  };
+
+  const removeTier = (i: number) => {
+    setPriceTiers(prev => prev.filter((_, idx) => idx !== i));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     try {
+      const priceTiersJson = degressiveEnabled && priceTiers.length > 0
+        ? JSON.stringify(priceTiers)
+        : undefined;
+
       const eq = await equipments.create({
         name,
         description: description || undefined,
@@ -58,6 +108,7 @@ export default function NewEquipmentPage() {
         canton: addressCanton || undefined,
         latitude: lat,
         longitude: lng,
+        priceTiersJson,
       });
       // Upload photos
       if (pendingFiles.length > 0) {
@@ -91,7 +142,9 @@ export default function NewEquipmentPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Scène mobile 6x4m"
+              <input type="text" value={name} onChange={e => setName(e.target.value)} required
+                autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                placeholder="Ex: Scène mobile 6x4m"
                 className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none" />
             </div>
 
@@ -131,33 +184,81 @@ export default function NewEquipmentPage() {
               </div>
             </div>
 
-            {/* Adresse */}
-            <AddressAutocomplete
-              value={address}
-              onChange={(data) => {
-                setAddress(data.address);
-                setAddressCity(data.city);
-                setAddressCanton(data.canton);
-                setLat(data.latitude);
-                setLng(data.longitude);
-              }}
-            />
-            {lat && lng && (
-              <p className="text-xs text-gray-400 -mt-3">
-                {addressCity}{addressCanton ? ` (${addressCanton})` : ""} — {lat.toFixed(4)}, {lng.toFixed(4)}
-              </p>
-            )}
+            {/* Degressive pricing */}
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={degressiveEnabled} onChange={e => setDegressiveEnabled(e.target.checked)} className="sr-only peer" id="degressive" />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-primary"></div>
+                <span className="text-sm font-medium text-gray-700">Activer une tarification dégressive</span>
+              </label>
+
+              {degressiveEnabled && (
+                <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500">Min jours</th>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500">Max jours</th>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500">Prix/jour (CHF)</th>
+                        <th className="px-3 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {priceTiers.map((tier, i) => (
+                        <tr key={i}>
+                          <td className="px-3 py-2">
+                            <input type="number" min="1" value={tier.minDays}
+                              onChange={e => updateTier(i, "minDays", e.target.value)}
+                              className="w-20 py-1 px-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-green-primary outline-none" />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input type="number" min={tier.minDays + 1} value={tier.maxDays ?? ""}
+                              onChange={e => updateTier(i, "maxDays", e.target.value)}
+                              placeholder="∞"
+                              className="w-20 py-1 px-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-green-primary outline-none" />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input type="number" min="0" step="1" value={tier.pricePerDay}
+                              onChange={e => updateTier(i, "pricePerDay", e.target.value)}
+                              className="w-24 py-1 px-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-green-primary outline-none" />
+                          </td>
+                          <td className="px-3 py-2">
+                            {priceTiers.length > 1 && (
+                              <button type="button" onClick={() => removeTier(i)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="px-3 py-2 bg-gray-50 border-t border-gray-100">
+                    <button type="button" onClick={addTier}
+                      className="text-green-primary text-xs font-semibold flex items-center gap-1 hover:text-green-darker transition-colors">
+                      <Plus className="w-3 h-3" /> Ajouter un palier
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Photos */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Photos</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <div
+                ref={dropRef}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg p-4 transition-colors ${dragging ? "border-green-primary bg-green-primary/5" : "border-gray-300"}`}
+              >
                 <input type="file" accept="image/jpeg,image/png,image/webp" multiple
-                  onChange={e => { if (e.target.files) setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)]); }}
+                  onChange={e => addFiles(e.target.files)}
                   className="hidden" id="photo-upload" />
                 <label htmlFor="photo-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-green-primary transition-colors">
                   <Upload className="w-8 h-8" />
-                  <span className="text-sm">Cliquez pour ajouter des photos (max 5MB)</span>
+                  <span className="text-sm">Cliquez ou glissez-déposez vos photos ici (max 5MB)</span>
                 </label>
                 {pendingFiles.length > 0 && (
                   <div className="flex gap-3 mt-4 flex-wrap">
@@ -175,6 +276,23 @@ export default function NewEquipmentPage() {
               </div>
             </div>
 
+            {/* Adresse */}
+            <AddressAutocomplete
+              value={address}
+              onChange={(data) => {
+                setAddress(data.address);
+                setAddressCity(data.city);
+                setAddressCanton(data.canton);
+                setLat(data.latitude);
+                setLng(data.longitude);
+              }}
+            />
+            {lat && lng && (
+              <p className="text-xs text-gray-400 -mt-3">
+                {addressCity}{addressCanton ? ` (${addressCanton})` : ""} — {lat.toFixed(4)}, {lng.toFixed(4)}
+              </p>
+            )}
+
             <div className="flex items-center gap-3">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={isAvailable} onChange={e => setIsAvailable(e.target.checked)} className="sr-only peer" />
@@ -183,16 +301,12 @@ export default function NewEquipmentPage() {
               <span className="text-sm font-medium text-gray-700">Disponible à la location</span>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
-              Vous pourrez définir les périodes d&apos;indisponibilité (maintenance, usage personnel, etc.) dans le calendrier après la création de l&apos;équipement.
-            </div>
-
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <div className="flex gap-3 pt-2">
               <button type="submit" disabled={submitting}
                 className="flex-1 bg-green-primary text-white hover:bg-green-darker disabled:opacity-50 py-3 rounded-full text-sm font-semibold transition-colors">
-                {uploadingPhotos ? "Upload photos..." : submitting ? "Création en cours..." : "Créer l\u0027équipement"}
+                {uploadingPhotos ? "Upload photos..." : submitting ? "Création en cours..." : "Créer l'équipement"}
               </button>
               <Link href="/equipments" className="py-3 px-6 border border-gray-300 rounded-full text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-center">
                 Annuler

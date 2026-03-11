@@ -45,7 +45,8 @@ public class EquipmentsController : ControllerBase
         [FromQuery] decimal? maxPrice,
         [FromQuery] double? lat,
         [FromQuery] double? lng,
-        [FromQuery] double? radius)
+        [FromQuery] double? radius,
+        [FromQuery] string? organisation)
     {
         var role = User.FindFirstValue(ClaimTypes.Role);
 
@@ -85,6 +86,9 @@ public class EquipmentsController : ControllerBase
 
         if (maxPrice.HasValue)
             query = query.Where(e => e.DailyPrice <= maxPrice.Value);
+
+        if (!string.IsNullOrEmpty(organisation))
+            query = query.Where(e => e.Organisation.Name == organisation);
 
         // Geo filter: bounding box on equipment's own coordinates
         if (lat.HasValue && lng.HasValue && radius.HasValue)
@@ -216,6 +220,7 @@ public class EquipmentsController : ControllerBase
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             IsAvailable = request.IsAvailable,
+            PriceTiersJson = request.PriceTiersJson,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -273,6 +278,7 @@ public class EquipmentsController : ControllerBase
         if (request.Canton != null) equipment.Canton = request.Canton;
         if (request.Latitude.HasValue) equipment.Latitude = request.Latitude;
         if (request.Longitude.HasValue) equipment.Longitude = request.Longitude;
+        if (request.PriceTiersJson != null) equipment.PriceTiersJson = request.PriceTiersJson;
 
         equipment.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
@@ -320,6 +326,7 @@ public class EquipmentsController : ControllerBase
         Name = e.Name,
         Description = e.Description,
         DailyPrice = e.DailyPrice,
+        PriceTiersJson = e.PriceTiersJson,
         Quantity = e.Quantity,
         Condition = e.Condition.ToString(),
         IsAvailable = e.IsAvailable,

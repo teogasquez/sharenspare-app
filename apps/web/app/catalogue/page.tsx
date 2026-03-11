@@ -22,6 +22,7 @@ export default function CataloguePage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedCanton, setSelectedCanton] = useState("");
+  const [selectedOrg, setSelectedOrg] = useState("");
 
   // Radius search state
   const [radiusCenter, setRadiusCenter] = useState<{ lat: number; lng: number } | null>(null);
@@ -48,8 +49,9 @@ export default function CataloguePage() {
       params.lng = radiusCenter.lng.toString();
       params.radius = radiusKm.toString();
     }
+    if (selectedOrg) params.organisation = selectedOrg;
     equipments.list(params).then(setItems).finally(() => setLoading(false));
-  }, [user, search, selectedCategory, selectedCanton, radiusCenter, radiusKm]);
+  }, [user, search, selectedCategory, selectedCanton, selectedOrg, radiusCenter, radiusKm]);
 
   const handleRadiusSearch = useCallback((lat: number, lng: number, radius: number) => {
     setRadiusCenter({ lat, lng });
@@ -68,14 +70,14 @@ export default function CataloguePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-green-primary">
-            Catalogue <span className="text-orange-accent">matériel</span>
+            Équipements <span className="text-orange-accent">disponibles</span>
           </h1>
-          <p className="text-gray-600 mt-2">Trouvez le matériel événementiel dont vous avez besoin.</p>
+          <p className="text-gray-600 mt-2">Trouvez rapidement le matériel événementiel dont vous avez besoin.</p>
         </div>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -101,6 +103,16 @@ export default function CataloguePage() {
             >
               <option value="">Tous les cantons</option>
               {cantons.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select
+              value={selectedOrg}
+              onChange={e => setSelectedOrg(e.target.value)}
+              className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none transition text-gray-700"
+            >
+              <option value="">Tous les festivals</option>
+              {Array.from(new Set(items.map(i => i.organisationName))).sort().map(org => (
+                <option key={org} value={org}>{org}</option>
+              ))}
             </select>
           </div>
 

@@ -20,8 +20,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login({ email, password });
-      router.push("/dashboard");
+      const u = await login({ email, password });
+      router.push(u.role === "Admin" ? "/admin" : "/catalogue");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Erreur de connexion");
     } finally {

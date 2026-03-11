@@ -28,14 +28,15 @@ public static class SeedData
         // ── Categories ──
         var categories = new[]
         {
-            new Category { Id = Guid.NewGuid(), Name = "Scene", Slug = "scene", Description = "Scenes, podiums, estrades", Icon = "theater", SortOrder = 1 },
+            new Category { Id = Guid.NewGuid(), Name = "Scène", Slug = "scene", Description = "Scènes, podiums, estrades", Icon = "theater", SortOrder = 1 },
             new Category { Id = Guid.NewGuid(), Name = "Son", Slug = "son", Description = "Sonorisation, enceintes, micros, tables de mixage", Icon = "speaker", SortOrder = 2 },
-            new Category { Id = Guid.NewGuid(), Name = "Lumiere", Slug = "lumiere", Description = "Eclairage, projecteurs, lyres, LED", Icon = "lightbulb", SortOrder = 3 },
-            new Category { Id = Guid.NewGuid(), Name = "Barrieres & Securite", Slug = "barrieres-securite", Description = "Barrieres, clotures, extincteurs, signalisation", Icon = "shield", SortOrder = 4 },
+            new Category { Id = Guid.NewGuid(), Name = "Lumière", Slug = "lumiere", Description = "Éclairage, projecteurs, lyres, LED", Icon = "lightbulb", SortOrder = 3 },
+            new Category { Id = Guid.NewGuid(), Name = "Barrières & Sécurité", Slug = "barrieres-securite", Description = "Barrières, clôtures, extincteurs, signalisation", Icon = "shield", SortOrder = 4 },
             new Category { Id = Guid.NewGuid(), Name = "Mobilier", Slug = "mobilier", Description = "Tables, chaises, bancs, comptoirs", Icon = "armchair", SortOrder = 5 },
-            new Category { Id = Guid.NewGuid(), Name = "Electricite", Slug = "electricite", Description = "Groupes electrogenes, rallonges, multiprises, armoires electriques", Icon = "zap", SortOrder = 6 },
+            new Category { Id = Guid.NewGuid(), Name = "Électricité", Slug = "electricite", Description = "Groupes électrogènes, rallonges, multiprises, armoires électriques", Icon = "zap", SortOrder = 6 },
             new Category { Id = Guid.NewGuid(), Name = "Tentes & Structures", Slug = "tentes-structures", Description = "Chapiteaux, barnums, tentes, tonnelles", Icon = "tent", SortOrder = 7 },
-            new Category { Id = Guid.NewGuid(), Name = "Restauration", Slug = "restauration", Description = "Frigos, fours, plaques, tireuses a biere", Icon = "utensils", SortOrder = 8 },
+            new Category { Id = Guid.NewGuid(), Name = "Restauration", Slug = "restauration", Description = "Frigos, fours, plaques, tireuses à bière", Icon = "utensils", SortOrder = 8 },
+            new Category { Id = Guid.NewGuid(), Name = "Matériel électrique", Slug = "materiel-electrique", Description = "Adaptateurs, câbles, multiprises, matériel électrique divers", Icon = "plug", SortOrder = 9 },
         };
         context.Categories.AddRange(categories);
         context.SaveChanges();
@@ -250,7 +251,7 @@ public static class SeedData
         context.SaveChanges();
 
         Console.WriteLine("Seed completed:");
-        Console.WriteLine($"   - {categories.Length} categories");
+        Console.WriteLine($"   - {categories.Length} catégories");
         Console.WriteLine($"   - 4 users (admin, 2 festivals, 1 particulier)");
         Console.WriteLine($"   - {equipments.Length + partEquipments.Length} equipements de demo");
     }
