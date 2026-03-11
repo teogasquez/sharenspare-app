@@ -188,8 +188,14 @@ export default function EquipmentDetailPage() {
               ) : (
                 <>
                   <div className="mb-5">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Disponibilité</h4>
-                    <AvailabilityCalendar equipmentId={id} />
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Disponibilité — cliquez pour sélectionner vos dates</h4>
+                    <AvailabilityCalendar
+                      equipmentId={id}
+                      onRangeSelect={(start, end) => {
+                        setStartDate(start);
+                        setEndDate(end);
+                      }}
+                    />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Réserver ce matériel</h3>
                   {!item.isAvailable && (
