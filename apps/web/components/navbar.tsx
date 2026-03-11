@@ -1,22 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { useState, useEffect } from "react";
-import { Menu, X, LogOut, User, LayoutDashboard, Package, CalendarCheck, ShieldCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { LogOut, User, Menu, X } from "lucide-react";
 
 export function Navbar() {
   const { user, logout, loading } = useAuth();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handler);
+    const handler = () => {
+      const currentY = window.scrollY;
+      setScrolled(currentY > 20);
+      setVisible(currentY <= 20 || currentY < lastScrollY.current);
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  useEffect(() => setMobileOpen(false), [pathname]);
 
   const isActive = (path: string) => pathname === path;
 
@@ -24,7 +34,7 @@ export function Navbar() {
     <Link
       href={href}
       className={`text-sm font-medium transition-colors ${
-        isActive(href) ? "text-[#00613a] font-bold" : "text-gray-700 hover:text-[#00613a]"
+        isActive(href) ? "text-orange-accent font-bold" : "text-gray-700 hover:text-green-primary"
       }`}
       onClick={() => setMobileOpen(false)}
     >
@@ -33,69 +43,68 @@ export function Navbar() {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-      <div className={`${scrolled ? "bg-white shadow-lg" : "bg-white"} transition-all`}>
-        <div className="container mx-auto px-4 max-w-7xl flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-[#00613a]">
-            Share<span className="text-[#D17034]">N</span>Spare
-          </Link>
+    <header className={`fixed left-0 w-full z-50 px-5 transition-all duration-300 ${visible ? "top-5 opacity-100" : "-top-20 opacity-0"}`}>
+      <div className={`mx-auto max-w-7xl rounded-full transition-all duration-300 backdrop-blur-sm shadow-lg ${scrolled ? "bg-white/90 py-2" : "bg-white/80 py-3"}`}>
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center">
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
-            {user && navLink("/dashboard", "Dashboard")}
-            {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
-            {user && user.role !== "Admin" && navLink("/reservations", "Réservations")}
-            {user?.role === "Admin" && navLink("/admin", "Admin")}
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            {loading ? null : user ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2 bg-[rgba(0,97,58,0.08)] text-[#00613a] hover:bg-[rgba(0,97,58,0.15)] py-2 px-4 rounded-full text-sm font-semibold transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  {user.firstName}
-                </Link>
-                <button
-                  onClick={logout}
-                  className="text-gray-500 hover:text-red-500 transition-colors p-2"
-                  title="Déconnexion"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/mascotte.webp" alt="ShareNSpare" width={40} height={40} className="h-10 w-auto" />
+              <div className="flex flex-col">
+                <div className="flex">
+                  <span className="text-xl font-bold text-green-primary">Share</span>
+                  <span className="text-xl font-bold text-orange-accent">N</span>
+                  <span className="text-xl font-bold text-green-primary">Spare</span>
+                </div>
+                <span className="text-[10px] text-orange-accent/70 -mt-1">Do more with less</span>
               </div>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-[#00613a] hover:text-[#005131] text-sm font-semibold transition-colors"
-                >
-                  Connexion
-                </Link>
-                <Link
-                  href="/register"
-                  className="bg-[#00613a] text-white hover:bg-[#005131] py-2 px-5 rounded-full text-sm font-semibold transition-colors"
-                >
-                  Inscription
-                </Link>
-              </>
-            )}
+            </Link>
+
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-8">
+              {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
+              {user && navLink("/dashboard", "Dashboard")}
+              {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
+              {user && user.role !== "Admin" && navLink("/reservations", "Réservations")}
+              {user?.role === "Admin" && navLink("/admin", "Admin")}
+            </nav>
+
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-3">
+              {loading ? null : user ? (
+                <div className="flex items-center gap-3">
+                  <Link href="/dashboard" className="flex items-center gap-2 bg-[rgba(0,97,58,0.08)] text-green-primary hover:bg-[rgba(0,97,58,0.15)] py-2 px-4 rounded-full text-sm font-semibold transition-colors">
+                    <User className="w-4 h-4" />{user.firstName}
+                  </Link>
+                  <button onClick={logout} className="text-gray-500 hover:text-red-500 transition-colors p-2" title="Déconnexion">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link href="/login" className="text-green-primary hover:text-green-darker text-sm font-semibold transition-colors">
+                    Connexion
+                  </Link>
+                  <Link href="/demande-acces" className="bg-green-primary text-white hover:bg-green-darker py-2 px-5 rounded-full text-sm font-semibold transition-colors">
+                    Demander un accès
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile hamburger */}
+            <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-
-          {/* Mobile hamburger */}
-          <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
+      </div>
 
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden bg-white border-t px-4 py-4 space-y-3">
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-sm shadow-lg mt-2 rounded-xl mx-0 absolute w-full left-0 px-5">
+          <div className="px-4 py-4 space-y-3">
             {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
             {user && navLink("/dashboard", "Dashboard")}
             {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
@@ -108,13 +117,13 @@ export function Navbar() {
               </button>
             ) : (
               <div className="flex flex-col gap-2">
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="text-[#00613a] text-sm font-semibold">Connexion</Link>
-                <Link href="/register" onClick={() => setMobileOpen(false)} className="bg-[#00613a] text-white py-2 px-5 rounded-full text-sm font-semibold text-center">Inscription</Link>
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="text-green-primary text-sm font-semibold">Connexion</Link>
+                <Link href="/demande-acces" onClick={() => setMobileOpen(false)} className="bg-green-primary text-white py-2 px-5 rounded-full text-sm font-semibold text-center">Demander un accès</Link>
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }
