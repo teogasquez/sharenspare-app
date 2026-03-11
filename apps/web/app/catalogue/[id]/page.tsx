@@ -4,26 +4,26 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { equipments, reservations, type EquipmentDto } from "@/lib/api";
+import { useCart } from "@/lib/cart-context";
+import { equipments, type EquipmentDto } from "@/lib/api";
 import { StatusBadge } from "@/components/status-badge";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
-import { Package, MapPin, ArrowLeft, CalendarDays, Tag, Building, Info, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Package, MapPin, ArrowLeft, CalendarDays, Tag, Building, Info, CheckCircle, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 
 export default function EquipmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { addItem, items } = useCart();
   const router = useRouter();
   const [item, setItem] = useState<EquipmentDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Reservation form
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
   useEffect(() => {
@@ -33,20 +33,26 @@ export default function EquipmentDetailPage() {
   const days = startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000)) : 0;
   const totalPrice = item ? days * quantity * item.dailyPrice : 0;
 
-  const handleReserve = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddToCart = () => {
     if (!user) { router.push("/login"); return; }
-    setSubmitting(true);
-    setError("");
-    try {
-      await reservations.create({ equipmentId: id, quantity, startDate, endDate, message: message || undefined });
-      setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Erreur lors de la réservation.");
-    } finally {
-      setSubmitting(false);
-    }
+    if (!item || !startDate || !endDate) return;
+    addItem({
+      equipmentId: id,
+      name: item.name,
+      primaryPhotoUrl: item.photos[0]?.url,
+      dailyPrice: item.dailyPrice,
+      startDate,
+      endDate,
+      quantity,
+      maxQuantity: item.quantity,
+      days,
+      totalPrice,
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 3000);
   };
+
+  const isInCart = items.some(i => i.equipmentId === id);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500">Chargement...</div>;
   if (error && !item) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
@@ -166,19 +172,10 @@ export default function EquipmentDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar - Reservation form */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 sticky top-24">
-              {success ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-16 h-16 text-green-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Demande envoyée !</h3>
-                  <p className="text-gray-500 mb-6">Le propriétaire va étudier votre demande.</p>
-                  <Link href="/reservations" className="bg-green-primary text-white hover:bg-green-darker py-2.5 px-6 rounded-full text-sm font-semibold transition-colors inline-block">
-                    Voir mes réservations
-                  </Link>
-                </div>
-              ) : isOwner ? (
+              {isOwner ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">C&apos;est votre équipement.</p>
                   <Link href={`/equipments/${item.id}/edit`} className="mt-4 bg-green-primary text-white hover:bg-green-darker py-2.5 px-6 rounded-full text-sm font-semibold transition-colors inline-block">
@@ -197,31 +194,33 @@ export default function EquipmentDetailPage() {
                       }}
                     />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Réserver ce matériel</h3>
+
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Ajouter au panier</h3>
                   {!item.isAvailable && (
                     <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-4">Ce matériel n&apos;est pas disponible actuellement.</div>
                   )}
-                  <form onSubmit={handleReserve} className="space-y-4">
+
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date début</label>
-                      <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required
+                      <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
                         min={new Date().toISOString().split("T")[0]}
                         className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date fin</label>
-                      <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required
+                      <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                         min={startDate || new Date().toISOString().split("T")[0]}
                         className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
-                      <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={item.quantity} required
+                      <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={item.quantity}
                         className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Message (optionnel)</label>
-                      <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} placeholder="Précisions sur votre événement..."
+                      <textarea value={message} onChange={e => setMessage(e.target.value)} rows={2} placeholder="Précisions sur votre événement..."
                         className="w-full py-2.5 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none resize-none" />
                     </div>
 
@@ -233,15 +232,30 @@ export default function EquipmentDetailPage() {
                       </div>
                     )}
 
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                    {addedToCart && (
+                      <div className="bg-green-50 text-green-700 text-sm p-3 rounded-lg flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" /> Ajouté au panier !
+                        <Link href="/panier" className="ml-auto font-semibold underline">Voir le panier</Link>
+                      </div>
+                    )}
 
-                    <button type="submit" disabled={submitting || !item.isAvailable}
-                      className="w-full bg-green-primary text-white hover:bg-green-darker disabled:opacity-50 py-3 rounded-full text-sm font-semibold transition-colors">
-                      {submitting ? "Envoi en cours..." : "Demander une réservation"}
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={!startDate || !endDate || !item.isAvailable}
+                      className="w-full bg-green-primary text-white hover:bg-green-darker disabled:opacity-50 py-3 rounded-full text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      {isInCart ? "Mettre à jour le panier" : "Ajouter au panier"}
                     </button>
 
+                    {isInCart && !addedToCart && (
+                      <Link href="/panier" className="w-full border-2 border-green-primary text-green-primary hover:bg-green-primary hover:text-white py-3 rounded-full text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                        Voir le panier
+                      </Link>
+                    )}
+
                     {!user && <p className="text-xs text-gray-400 text-center">Vous devez être connecté pour réserver.</p>}
-                  </form>
+                  </div>
                 </>
               )}
             </div>

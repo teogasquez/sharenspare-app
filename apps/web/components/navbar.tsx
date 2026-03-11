@@ -4,11 +4,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/lib/toast-context";
 import { useState, useEffect, useRef } from "react";
-import { LogOut, User, Menu, X } from "lucide-react";
+import { LogOut, User, Menu, X, ShoppingCart, Bell } from "lucide-react";
 
 export function Navbar() {
   const { user, logout, loading } = useAuth();
+  const { count } = useCart();
+  const { unreadCount, clearUnread } = useToast();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -64,9 +68,9 @@ export function Navbar() {
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-8">
               {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
-              {user && navLink("/dashboard", "Dashboard")}
               {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
               {user && user.role !== "Admin" && navLink("/reservations", "Réservations")}
+              {user && navLink("/dashboard", "Dashboard")}
               {user?.role === "Admin" && navLink("/admin", "Admin")}
             </nav>
 
@@ -74,6 +78,26 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {loading ? null : user ? (
                 <div className="flex items-center gap-3">
+                  {user.role !== "Admin" && (
+                    <>
+                      <Link href="/reservations" onClick={clearUnread} className="relative text-gray-600 hover:text-green-primary transition-colors p-2">
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                      <Link href="/panier" className="relative text-gray-600 hover:text-green-primary transition-colors p-2">
+                        <ShoppingCart className="w-5 h-5" />
+                        {count > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 bg-orange-accent text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {count}
+                          </span>
+                        )}
+                      </Link>
+                    </>
+                  )}
                   <Link href="/dashboard" className="flex items-center gap-2 bg-[rgba(0,97,58,0.08)] text-green-primary hover:bg-[rgba(0,97,58,0.15)] py-2 px-4 rounded-full text-sm font-semibold transition-colors">
                     <User className="w-4 h-4" />{user.firstName}
                   </Link>
@@ -108,8 +132,13 @@ export function Navbar() {
             {user && user.role !== "Admin" && navLink("/catalogue", "Catalogue")}
             {user && user.role !== "Admin" && navLink("/equipments", "Mes équipements")}
             {user && user.role !== "Admin" && navLink("/reservations", "Réservations")}
-            {user && user.role !== "Admin" && navLink("/dashboard", "Dashboard")}
+            {user && navLink("/dashboard", "Dashboard")}
             {user?.role === "Admin" && navLink("/admin", "Admin")}
+            {user && user.role !== "Admin" && (
+              <Link href="/panier" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-green-primary transition-colors">
+                <ShoppingCart className="w-4 h-4" /> Panier{count > 0 ? ` (${count})` : ""}
+              </Link>
+            )}
             <hr className="my-2" />
             {user ? (
               <button onClick={() => { logout(); setMobileOpen(false); }} className="text-red-500 text-sm font-medium">

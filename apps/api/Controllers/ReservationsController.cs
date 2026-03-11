@@ -177,15 +177,16 @@ public class ReservationsController : ControllerBase
 
         var validTransition = (reservation.Status, newStatus, isOwner) switch
         {
-            (ReservationStatus.Pending, ReservationStatus.QuoteSent, true) => true,
+            
+            (ReservationStatus.Pending, ReservationStatus.Accepted, true) => true,
             (ReservationStatus.Pending, ReservationStatus.Rejected, true) => true,
             (ReservationStatus.Pending, ReservationStatus.Cancelled, false) => true,
-            (ReservationStatus.QuoteSent, ReservationStatus.Accepted, false) => true,
-            (ReservationStatus.QuoteSent, ReservationStatus.Rejected, true) => true,
-            (ReservationStatus.QuoteSent, ReservationStatus.Cancelled, false) => true,
+            
+            
+            
             (ReservationStatus.Accepted, ReservationStatus.InProgress, true) => true,
             (ReservationStatus.Accepted, ReservationStatus.Cancelled, false) => true,
-            (ReservationStatus.InProgress, ReservationStatus.Returned, false) => true,
+            (ReservationStatus.InProgress, ReservationStatus.Returned, true) => true,
             (ReservationStatus.Returned, ReservationStatus.Closed, true) => true,
             _ => false
         };

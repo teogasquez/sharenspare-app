@@ -4,20 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { reservations, payments, type ReservationDto } from "@/lib/api";
+import { useToast } from "@/lib/toast-context";
+import { reservations, type ReservationDto } from "@/lib/api";
 import { StatusBadge } from "@/components/status-badge";
-import { CalendarCheck, Package, ArrowRight, Send, Check, X, Play, RotateCcw, Archive, CreditCard } from "lucide-react";
+import { CalendarCheck, ArrowRight, Check, X, Play, RotateCcw, Archive } from "lucide-react";
 
 type Tab = "requester" | "owner";
 
-const WORKFLOW_ACTIONS: Record<string, { label: string; status: string; icon: typeof Send; color: string; ownerOnly?: boolean; requesterOnly?: boolean }[]> = {
+const WORKFLOW_ACTIONS: Record<string, { label: string; status: string; icon: typeof Check; color: string; ownerOnly?: boolean; requesterOnly?: boolean }[]> = {
   Pending: [
-    { label: "Envoyer un devis", status: "QuoteSent", icon: Send, color: "bg-blue-600 hover:bg-blue-700", ownerOnly: true },
+    { label: "Accepter", status: "Accepted", icon: Check, color: "bg-green-600 hover:bg-green-700", ownerOnly: true },
     { label: "Refuser", status: "Rejected", icon: X, color: "bg-red-600 hover:bg-red-700", ownerOnly: true },
-    { label: "Annuler", status: "Cancelled", icon: X, color: "bg-gray-600 hover:bg-gray-700", requesterOnly: true },
-  ],
-  QuoteSent: [
-    { label: "Accepter", status: "Accepted", icon: Check, color: "bg-green-600 hover:bg-green-700", requesterOnly: true },
     { label: "Annuler", status: "Cancelled", icon: X, color: "bg-gray-600 hover:bg-gray-700", requesterOnly: true },
   ],
   Accepted: [
@@ -34,6 +31,7 @@ const WORKFLOW_ACTIONS: Record<string, { label: string; status: string; icon: ty
 
 export default function ReservationsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { clearUnread } = useToast();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("requester");
   const [items, setItems] = useState<ReservationDto[]>([]);
@@ -41,31 +39,15 @@ export default function ReservationsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
+    clearUnread();
+  }, [clearUnread]);
+
+  useEffect(() => {
     if (!authLoading && !user) { router.push("/login"); return; }
     if (!user) return;
     setLoading(true);
     reservations.list(tab).then(setItems).finally(() => setLoading(false));
   }, [user, authLoading, router, tab]);
-
-  // Handle Stripe checkout redirect return
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (!sessionId || !user) return;
-    // Clean URL
-    window.history.replaceState({}, "", "/reservations");
-  }, [user]);
-
-  const handlePay = async (resId: string) => {
-    setActionLoading(resId);
-    try {
-      const { url } = await payments.createCheckout(resId);
-      window.location.href = url;
-    } catch (err: any) {
-      alert(err.message || "Erreur lors de la création du paiement.");
-      setActionLoading(null);
-    }
-  };
 
   const handleAction = async (resId: string, status: string) => {
     const note = status === "Rejected" ? prompt("Raison du refus (optionnel):") : undefined;
@@ -97,7 +79,7 @@ export default function ReservationsPage() {
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-6">
           <button onClick={() => setTab("requester")} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${tab === "requester" ? "bg-white shadow text-green-primary" : "text-gray-600 hover:text-gray-900"}`}>
-            Mes demandes
+            Mes réservations
           </button>
           <button onClick={() => setTab("owner")} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${tab === "owner" ? "bg-white shadow text-green-primary" : "text-gray-600 hover:text-gray-900"}`}>
             Demandes reçues
@@ -108,7 +90,7 @@ export default function ReservationsPage() {
           <div className="text-center py-20">
             <CalendarCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">
-              {tab === "requester" ? "Vous n'avez pas encore fait de demande." : "Aucune demande reçue."}
+              {tab === "requester" ? "Vous n'avez pas encore fait de réservation." : "Aucune demande reçue."}
             </p>
             {tab === "requester" && (
               <Link href="/catalogue" className="mt-4 inline-flex items-center gap-2 text-green-primary text-sm font-semibold hover:underline">
@@ -157,17 +139,6 @@ export default function ReservationsPage() {
                       <div className="text-right">
                         <p className="text-lg font-bold text-green-primary">{res.totalPrice.toFixed(2)} CHF</p>
                       </div>
-
-                      {/* Payment button for accepted reservations (requester only) */}
-                      {res.status === "Accepted" && tab === "requester" && (
-                        <button
-                          onClick={() => handlePay(res.id)}
-                          disabled={actionLoading === res.id}
-                          className="bg-orange-accent hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-full inline-flex items-center gap-1 transition-colors disabled:opacity-50"
-                        >
-                          <CreditCard className="w-3 h-3" /> Payer ({res.totalPrice.toFixed(2)} CHF)
-                        </button>
-                      )}
 
                       {filteredActions.length > 0 && (
                         <div className="flex gap-2 flex-wrap">

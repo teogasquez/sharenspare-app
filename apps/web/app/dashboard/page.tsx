@@ -87,7 +87,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Mes équipements", value: myEquipments.length, icon: Package, color: "text-green-primary" },
-            { label: "En attente", value: pendingReservations.length + pendingLocations.length, icon: CalendarCheck, color: "text-yellow-600" },
+            { label: "Réservations en attente", value: pendingReservations.length + pendingLocations.length, icon: CalendarCheck, color: "text-yellow-600" },
             { label: "Locations actives", value: activeLocations.length, icon: TrendingUp, color: "text-blue-600" },
             { label: "Revenus générés", value: `${revenue.toLocaleString("fr-CH")} CHF`, icon: TrendingUp, color: "text-green-primary" },
           ].map(({ label, value, icon: Icon, color }) => (

@@ -139,6 +139,7 @@ export function EquipmentMap({ items, onRadiusSearch, onClearRadius, radiusCente
         zoom={8}
         style={{ height: "400px", width: "100%" }}
         scrollWheelZoom={true}
+        attributionControl={false}
       >
         <TileLayer
           url={TILE_URL}

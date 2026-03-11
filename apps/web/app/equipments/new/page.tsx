@@ -73,7 +73,8 @@ export default function NewEquipmentPage() {
   };
 
   const updateTier = (i: number, field: keyof PriceTier, value: string) => {
-    setPriceTiers(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value === "" ? null : Number(value) } : t));
+    const parsed = field === "maxDays" ? (value === "" ? null : Number(value)) : (value === "" ? 0 : Number(value));
+    setPriceTiers(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: parsed } : t));
   };
 
   const addTier = () => {

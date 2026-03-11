@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Leaf, MapPin, Shield, Zap, Package, TrendingUp, Euro } from "lucide-react";
+import { ArrowRight, Leaf, MapPin, Shield, Zap, TrendingUp, Euro, Mic, Lightbulb, Warehouse, Armchair, ShieldCheck } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -19,7 +19,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/login" className="bg-green-primary text-white hover:bg-orange-accent transition-colors font-semibold py-3 px-8 rounded-full shadow-lg inline-flex items-center gap-2">
-                  Se connecter à la plateforme <ArrowRight className="w-5 h-5" />
+                  Se connecter <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link href="/demande-acces" className="border-2 border-green-primary text-green-primary hover:bg-green-primary hover:text-white transition-colors font-semibold py-3 px-8 rounded-full">
                   Demander un accès
@@ -80,20 +80,21 @@ export default function HomePage() {
           <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
             Des équipements professionnels pour tous types d&apos;événements en Suisse.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {[
-              { icon: "🎪", label: "Scènes & podiums" },
-              { icon: "🔊", label: "Sonorisation" },
-              { icon: "💡", label: "Éclairage" },
-              { icon: "⛺", label: "Tentes & structures" },
-              { icon: "🪑", label: "Mobilier" },
-              { icon: "⚡", label: "Électricité" },
-              { icon: "🛡️", label: "Barrières & sécurité" },
-              { icon: "🍺", label: "Restauration" },
-            ].map(({ icon, label }) => (
-              <div key={label} className="bg-bg-alt rounded-xl p-6 text-center hover:bg-[rgba(0,97,58,0.08)] transition-colors">
-                <div className="text-4xl mb-3">{icon}</div>
-                <p className="font-semibold text-gray-800 text-sm">{label}</p>
+              { icon: Mic, title: "Systèmes son", desc: "Enceintes professionnelles, consoles, amplificateurs." },
+              { icon: Lightbulb, title: "Éclairages scéniques", desc: "Projecteurs LED, spots et poursuites, effets lumineux." },
+              { icon: Warehouse, title: "Structures & tentes", desc: "Chapiteaux, scènes modulaires." },
+              { icon: Armchair, title: "Mobilier événementiel", desc: "Bancs, tables, bars, mobilier VIP." },
+              { icon: ShieldCheck, title: "Barrières & sécurité", desc: "Barrières de sécurité, contrôle d'accès, signalétique." },
+              { icon: Zap, title: "Électricité & énergie", desc: "Groupes électrogènes, câblage, distribution." },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="bg-bg-alt rounded-xl p-6 hover:bg-[rgba(0,97,58,0.08)] transition-colors">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-3 shadow-sm">
+                  <Icon className="w-5 h-5 text-green-primary" />
+                </div>
+                <p className="font-semibold text-gray-800 text-sm mb-1">{title}</p>
+                <p className="text-xs text-gray-500">{desc}</p>
               </div>
             ))}
           </div>
