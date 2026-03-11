@@ -34,6 +34,7 @@ export default function DashboardPage() {
         setMyReservations(req);
         setMyLocations(own);
       })
+      .catch(() => {/* ignore — données restent vides */})
       .finally(() => setLoading(false));
   }, [user, authLoading, router]);
 

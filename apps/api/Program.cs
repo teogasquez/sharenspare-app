@@ -174,13 +174,23 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Seed data in development
-if (app.Environment.IsDevelopment())
+// Apply pending migrations on startup
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var passwordHasher = scope.ServiceProvider.GetRequiredService<PasswordHasher>();
-    SeedData.Initialize(context, passwordHasher);
+    try
+    {
+        context.Database.Migrate();
+        Console.WriteLine("Database migrations applied.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration error: {ex.Message}");
+    }
+    // Seed data in development
+    if (app.Environment.IsDevelopment())
+        SeedData.Initialize(context, passwordHasher);
 }
 
 // Ensure MinIO bucket exists
