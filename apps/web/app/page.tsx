@@ -6,37 +6,57 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="min-h-screen flex items-center bg-white py-20">
+      <section className="py-20 lg:min-h-screen flex items-center bg-white">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-green-primary mb-6 leading-tight">
-                Une plateforme professionnelle de location de matériel pour{" "}
-                <span className="text-orange-accent">l&apos;événementiel suisse</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+            {/* Colonne texte */}
+            <div className="space-y-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-green-primary leading-tight text-center lg:text-left">
+                Et si les festivals suisses devenaient{" "}
+                <span className="text-orange-accent font-extrabold">partenaires </span>
+                plutôt que{" "}
+                <span className="text-orange-accent font-extrabold">concurrents ?</span>
               </h1>
-              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-                ShareNSpare connecte festivals, associations et professionnels afin de mutualiser le matériel événementiel en Suisse. Optimisez vos coûts et valorisez pleinement vos équipements dans un cadre sécurisé et professionnel.
+
+              <p className="text-xl md:text-2xl text-green-primary/80 text-center lg:text-left">
+                La première plateforme suisse de location de matériel entre festivals.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/login" className="bg-green-primary text-white hover:bg-orange-accent transition-colors font-semibold py-3 px-8 rounded-full shadow-lg inline-flex items-center gap-2">
+
+              {/* Image mobile */}
+              <div className="flex lg:hidden justify-center">
+                <Image
+                  src="/hero.webp"
+                  alt="Festival suisse"
+                  width={600}
+                  height={260}
+                  unoptimized
+                  className="rounded-xl shadow-xl w-5/6 max-h-64 object-cover mx-auto"
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-2 items-center lg:items-start">
+                <Link href="/login" className="w-11/12 sm:w-auto bg-green-primary text-white hover:bg-orange-accent transition-colors font-semibold py-3 px-8 rounded-full shadow-md inline-flex items-center justify-center gap-2">
                   Se connecter <ArrowRight className="w-5 h-5" />
                 </Link>
-                <Link href="/demande-acces" className="border-2 border-green-primary text-green-primary hover:bg-green-primary hover:text-white transition-colors font-semibold py-3 px-8 rounded-full">
+                <Link href="/demande-acces" className="w-11/12 sm:w-auto border-2 border-green-primary text-green-primary hover:bg-green-primary hover:text-white transition-colors font-semibold py-3 px-8 rounded-full inline-flex items-center justify-center">
                   Demander un accès
                 </Link>
               </div>
             </div>
-            <div className="flex justify-center">
-              <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/hero.webp"
-                  alt="ShareNSpare - Matériel événementiel"
-                  width={600}
-                  height={500}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+
+            {/* Image desktop */}
+            <div className="hidden lg:flex justify-end">
+              <Image
+                src="/hero.webp"
+                alt="Festival suisse"
+                width={600}
+                height={500}
+                unoptimized
+                className="rounded-xl shadow-2xl max-h-125 object-cover"
+              />
             </div>
+
           </div>
         </div>
       </section>
