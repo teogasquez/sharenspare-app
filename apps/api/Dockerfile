@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ShareNSpare.Api.csproj .
+COPY apps/api/ShareNSpare.Api.csproj .
 RUN dotnet restore
-COPY . .
+COPY apps/api/ .
 RUN dotnet publish ShareNSpare.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
