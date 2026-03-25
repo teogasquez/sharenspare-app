@@ -30,7 +30,7 @@ export function NotificationPoller() {
   const { addToast } = useToast();
 
   // Use a ref so the interval always calls the latest version of poll
-  const pollRef = useRef<() => Promise<void>>();
+  const pollRef = useRef<(() => Promise<void>) | null>(null);
 
   const poll = useCallback(async () => {
     if (!user) return;
