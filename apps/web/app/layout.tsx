@@ -16,6 +16,7 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "ShareNSpare - Location de materiel evenementiel",
   description: "Plateforme de location et de partage de materiel evenementiel en Suisse",
+  icons: { icon: "/mascotte.webp" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
