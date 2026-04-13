@@ -5,11 +5,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { admin, equipments as equipmentsApi, type UserDto, type OrganisationDto, type InvitationDto, type AdminStatsDto, type EquipmentListDto } from "@/lib/api";
-import { ShieldCheck, Users, Building, Mail, Plus, Check, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp, Copy, Map } from "lucide-react";
+import { ShieldCheck, Users, Building, Mail, Plus, Check, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp, Copy } from "lucide-react";
 
 const EquipmentMap = dynamic(() => import("@/components/equipment-map").then(m => ({ default: m.EquipmentMap })), { ssr: false, loading: () => <div className="h-96 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">Chargement de la carte...</div> });
 
-type Tab = "stats" | "users" | "organisations" | "invitations" | "carte";
+type Tab = "stats" | "users" | "organisations" | "invitations";
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -47,11 +47,14 @@ export default function AdminPage() {
     setLoading(true);
     const loadData = async () => {
       try {
-        if (tab === "stats") setStats(await admin.stats());
+        if (tab === "stats") {
+          const [s, eq] = await Promise.all([admin.stats(), equipmentsApi.list()]);
+          setStats(s);
+          setAllEquipments(eq);
+        }
         else if (tab === "users") setUsers(await admin.users());
         else if (tab === "organisations") setOrgs(await admin.organisations());
         else if (tab === "invitations") setInvitations(await admin.invitations());
-        else if (tab === "carte") setAllEquipments(await equipmentsApi.list());
       } finally { setLoading(false); }
     };
     loadData();
@@ -107,7 +110,6 @@ export default function AdminPage() {
             { key: "users" as Tab, label: "Utilisateurs", icon: Users },
             { key: "organisations" as Tab, label: "Organisations", icon: Building },
             { key: "invitations" as Tab, label: "Invitations", icon: Mail },
-            { key: "carte" as Tab, label: "Carte", icon: Map },
           ]).map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setTab(key)} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-2 ${tab === key ? "bg-white shadow text-green-primary" : "text-gray-600 hover:text-gray-900"}`}>
               <Icon className="w-4 h-4" /> {label}
@@ -121,6 +123,7 @@ export default function AdminPage() {
           <>
             {/* Stats Tab */}
             {tab === "stats" && stats && (
+              <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                   <div className="flex items-center gap-3 mb-3">
@@ -161,6 +164,32 @@ export default function AdminPage() {
                   </div>
                   <p className="text-2xl font-bold text-gray-900">{stats.totalEquipments}</p>
                 </div>
+              </div>
+
+              {/* Carte des équipements */}
+              <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-gray-900">Carte des équipements</h2>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm text-gray-600">Festival :</label>
+                    <select
+                      value={selectedOrg}
+                      onChange={e => setSelectedOrg(e.target.value)}
+                      className="py-1.5 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none"
+                    >
+                      <option value="all">Tous ({allEquipments.length})</option>
+                      {Array.from(new Set(allEquipments.map(e => e.organisationName))).sort().map(orgName => (
+                        <option key={orgName} value={orgName}>
+                          {orgName} ({allEquipments.filter(e => e.organisationName === orgName).length})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <EquipmentMap
+                  items={selectedOrg === "all" ? allEquipments : allEquipments.filter(e => e.organisationName === selectedOrg)}
+                />
+              </div>
               </div>
             )}
 
@@ -351,32 +380,6 @@ export default function AdminPage() {
                     </table>
                   </div>
                 </div>
-              </div>
-            )}
-            {/* Carte Tab */}
-            {tab === "carte" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <label className="text-sm font-medium text-gray-700">Filtrer par festival :</label>
-                  <select
-                    value={selectedOrg}
-                    onChange={e => setSelectedOrg(e.target.value)}
-                    className="py-2 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none"
-                  >
-                    <option value="all">Tous les équipements ({allEquipments.length})</option>
-                    {Array.from(new Set(allEquipments.map(e => e.organisationName))).sort().map(orgName => (
-                      <option key={orgName} value={orgName}>
-                        {orgName} ({allEquipments.filter(e => e.organisationName === orgName).length})
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-sm text-gray-500">
-                    {selectedOrg === "all" ? allEquipments.length : allEquipments.filter(e => e.organisationName === selectedOrg).length} équipement(s) affiché(s)
-                  </span>
-                </div>
-                <EquipmentMap
-                  items={selectedOrg === "all" ? allEquipments : allEquipments.filter(e => e.organisationName === selectedOrg)}
-                />
               </div>
             )}
           </>
