@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { admin, type UserDto, type OrganisationDto, type InvitationDto, type AdminStatsDto } from "@/lib/api";
-import { ShieldCheck, Users, Building, Mail, Plus, Check, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp, Copy } from "lucide-react";
+import { admin, equipments as equipmentsApi, type UserDto, type OrganisationDto, type InvitationDto, type AdminStatsDto, type EquipmentListDto } from "@/lib/api";
+import { ShieldCheck, Users, Building, Mail, Plus, Check, CheckCircle, Ban, BarChart3, Package, CalendarCheck, TrendingUp, Copy, Map } from "lucide-react";
 
-type Tab = "stats" | "users" | "organisations" | "invitations";
+const EquipmentMap = dynamic(() => import("@/components/equipment-map").then(m => ({ default: m.EquipmentMap })), { ssr: false, loading: () => <div className="h-96 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">Chargement de la carte...</div> });
+
+type Tab = "stats" | "users" | "organisations" | "invitations" | "carte";
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -16,6 +19,8 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [orgs, setOrgs] = useState<OrganisationDto[]>([]);
   const [invitations, setInvitations] = useState<InvitationDto[]>([]);
+  const [allEquipments, setAllEquipments] = useState<EquipmentListDto[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
   // Invitation form
@@ -45,7 +50,8 @@ export default function AdminPage() {
         if (tab === "stats") setStats(await admin.stats());
         else if (tab === "users") setUsers(await admin.users());
         else if (tab === "organisations") setOrgs(await admin.organisations());
-        else setInvitations(await admin.invitations());
+        else if (tab === "invitations") setInvitations(await admin.invitations());
+        else if (tab === "carte") setAllEquipments(await equipmentsApi.list());
       } finally { setLoading(false); }
     };
     loadData();
@@ -101,6 +107,7 @@ export default function AdminPage() {
             { key: "users" as Tab, label: "Utilisateurs", icon: Users },
             { key: "organisations" as Tab, label: "Organisations", icon: Building },
             { key: "invitations" as Tab, label: "Invitations", icon: Mail },
+            { key: "carte" as Tab, label: "Carte", icon: Map },
           ]).map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setTab(key)} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-2 ${tab === key ? "bg-white shadow text-green-primary" : "text-gray-600 hover:text-gray-900"}`}>
               <Icon className="w-4 h-4" /> {label}
@@ -344,6 +351,32 @@ export default function AdminPage() {
                     </table>
                   </div>
                 </div>
+              </div>
+            )}
+            {/* Carte Tab */}
+            {tab === "carte" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-medium text-gray-700">Filtrer par festival :</label>
+                  <select
+                    value={selectedOrg}
+                    onChange={e => setSelectedOrg(e.target.value)}
+                    className="py-2 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none"
+                  >
+                    <option value="all">Tous les équipements ({allEquipments.length})</option>
+                    {Array.from(new Set(allEquipments.map(e => e.organisationName))).sort().map(orgName => (
+                      <option key={orgName} value={orgName}>
+                        {orgName} ({allEquipments.filter(e => e.organisationName === orgName).length})
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-sm text-gray-500">
+                    {selectedOrg === "all" ? allEquipments.length : allEquipments.filter(e => e.organisationName === selectedOrg).length} équipement(s) affiché(s)
+                  </span>
+                </div>
+                <EquipmentMap
+                  items={selectedOrg === "all" ? allEquipments : allEquipments.filter(e => e.organisationName === selectedOrg)}
+                />
               </div>
             )}
           </>
