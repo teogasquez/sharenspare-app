@@ -35,13 +35,15 @@ export class ApiError extends Error {
 
 // ── Auth ──
 export interface LoginRequest { email: string; password: string; }
-export interface RegisterRequest { email: string; password: string; firstName: string; lastName: string; phone?: string; invitationToken?: string; organisationName?: string; }
+export interface RegisterRequest { email: string; password: string; firstName?: string; lastName?: string; phone?: string; invitationToken?: string; organisationName?: string; website?: string; city?: string; description?: string; festivalSize?: string; }
+export interface InvitationInfoDto { email: string; organisationName: string; role: string; }
 export interface LoginResponse { token: string; expiresAt: string; user: UserDto; }
 
 export const auth = {
   login: (data: LoginRequest) => request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
   register: (data: RegisterRequest) => request<LoginResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
   me: () => request<UserDto>("/me"),
+  getInvitation: (token: string) => request<InvitationInfoDto>(`/auth/invitation/${token}`),
 };
 
 // ── Categories ──

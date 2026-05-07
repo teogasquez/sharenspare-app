@@ -12,11 +12,9 @@ public class RegisterRequest
     [MinLength(8)]
     public string Password { get; set; } = string.Empty;
 
-    [Required]
     [MaxLength(100)]
     public string FirstName { get; set; } = string.Empty;
 
-    [Required]
     [MaxLength(100)]
     public string LastName { get; set; } = string.Empty;
 
@@ -26,7 +24,18 @@ public class RegisterRequest
     // For invited users (festivals/pros)
     public string? InvitationToken { get; set; }
 
-    // For self-registration (particuliers only)
+    // Organisation fields (filled during festival registration)
     [MaxLength(255)]
     public string? OrganisationName { get; set; }
+
+    [MaxLength(255)]
+    public string? Website { get; set; }
+
+    [MaxLength(100)]
+    public string? City { get; set; }
+
+    public string? Description { get; set; }
+
+    [MaxLength(50)]
+    public string? FestivalSize { get; set; }
 }

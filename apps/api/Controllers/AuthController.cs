@@ -58,6 +58,18 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpGet("invitation/{token}")]
+    public async Task<IActionResult> GetInvitation(string token)
+    {
+        var invitation = await _context.Invitations
+            .FirstOrDefaultAsync(i => i.Token == token && i.UsedAt == null);
+
+        if (invitation == null || invitation.ExpiresAt < DateTime.UtcNow)
+            return NotFound(new { message = "Invitation invalide ou expirée." });
+
+        return Ok(new { email = invitation.Email, organisationName = invitation.OrganisationName, role = invitation.Role.ToString() });
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult<LoginResponse>> Register([FromBody] RegisterRequest request)
     {
@@ -79,23 +91,28 @@ public class AuthController : ControllerBase
 
         if (!string.IsNullOrEmpty(request.InvitationToken))
         {
-            // Invited registration (festival / pro)
             var invitation = await _context.Invitations
                 .FirstOrDefaultAsync(i => i.Token == request.InvitationToken && i.UsedAt == null);
 
             if (invitation == null || invitation.ExpiresAt < DateTime.UtcNow)
-            {
                 return BadRequest(new { message = "Invalid or expired invitation" });
-            }
 
             role = invitation.Role;
             var orgType = role == UserRole.Festival ? OrganisationType.Festival : OrganisationType.Pro;
 
+            var descParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(request.FestivalSize)) descParts.Add($"Taille : {request.FestivalSize}");
+            if (!string.IsNullOrWhiteSpace(request.Description)) descParts.Add(request.Description);
+
             organisation = new Organisation
             {
                 Id = Guid.NewGuid(),
-                Name = invitation.OrganisationName,
+                Name = !string.IsNullOrWhiteSpace(request.OrganisationName) ? request.OrganisationName : invitation.OrganisationName,
                 Type = orgType,
+                Phone = request.Phone,
+                Website = request.Website,
+                City = request.City,
+                Description = descParts.Count > 0 ? string.Join("\n", descParts) : null,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Organisations.Add(organisation);
@@ -109,13 +126,14 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        var festivalName = organisation.Name;
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
-            FirstName = request.FirstName,
-            LastName = request.LastName,
+            FirstName = string.IsNullOrWhiteSpace(request.FirstName) ? festivalName : request.FirstName,
+            LastName = string.IsNullOrWhiteSpace(request.LastName) ? "" : request.LastName,
             Phone = request.Phone,
             Role = role,
             OrganisationId = organisation.Id,
@@ -125,7 +143,6 @@ public class AuthController : ControllerBase
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        // Reload with organisation
         user.Organisation = organisation;
 
         var token = _jwtService.GenerateToken(user);
