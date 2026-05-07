@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { auth, ApiError } from "@/lib/api";
-import { Mail, Phone, Globe, MapPin, AlignLeft, Building, Lock, Check, AlertCircle } from "lucide-react";
+import { Mail, Phone, Globe, MapPin, AlignLeft, Building, Lock, Check, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 export default function ProfilPage() {
   const { user, loading: authLoading, refreshUser } = useAuth();
@@ -21,6 +21,7 @@ export default function ProfilPage() {
   const [accountLoading, setAccountLoading] = useState(false);
   const [orgLoading, setOrgLoading] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false });
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
@@ -202,34 +203,47 @@ export default function ProfilPage() {
             <Lock className="w-5 h-5 text-green-primary" /> Changer le mot de passe
           </h2>
           <form onSubmit={savePassword} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="password" required value={passwords.current} onChange={e => setPasswords(p => ({ ...p, current: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none text-sm" />
+            {(["current", "next", "confirm"] as const).map((field) => (
+              <div key={field}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {field === "current" ? "Mot de passe actuel" : field === "next" ? "Nouveau mot de passe" : "Confirmer le nouveau mot de passe"}
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type={showPw[field] ? "text" : "password"}
+                    required
+                    minLength={field === "next" ? 8 : undefined}
+                    value={passwords[field]}
+                    onChange={e => setPasswords(p => ({ ...p, [field]: e.target.value }))}
+                    placeholder={field === "next" ? "Min. 8 caractères, 1 majuscule, 1 chiffre" : undefined}
+                    className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none text-sm"
+                  />
+                  <button type="button" onClick={() => setShowPw(s => ({ ...s, [field]: !s[field] }))}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPw[field] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="password" required minLength={8} value={passwords.next} onChange={e => setPasswords(p => ({ ...p, next: e.target.value }))}
-                  placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none text-sm" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau mot de passe</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="password" required value={passwords.confirm} onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent outline-none text-sm" />
-              </div>
-            </div>
+            ))}
             {pwMsg && (
               <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${pwMsg.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                 {pwMsg.type === "success" ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                {pwMsg.text}
+              </div>
+            )}
+            <button type="submit" disabled={pwLoading}
+              className="bg-green-primary text-white hover:bg-green-darker py-2.5 px-6 rounded-full text-sm font-semibold transition-colors disabled:opacity-50">
+              {pwLoading ? "Modification..." : "Changer le mot de passe"}
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+-4" />}
                 {pwMsg.text}
               </div>
             )}
