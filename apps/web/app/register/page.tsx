@@ -215,19 +215,6 @@ function RegisterForm() {
                 Rejoignez le réseau de festivals qui mutualisent leur matériel pour réduire les coûts et l'impact environnemental.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 w-full">
-              {[
-                { label: "Festivals partenaires", value: "50+" },
-                { label: "Équipements disponibles", value: "2000+" },
-                { label: "Économies moyennes", value: "30%" },
-                { label: "Cantons couverts", value: "26" },
-              ].map(s => (
-                <div key={s.label} className="bg-white/10 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold text-white">{s.value}</p>
-                  <p className="text-white/70 text-xs mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
         </div>
