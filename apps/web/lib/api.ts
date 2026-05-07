@@ -44,6 +44,8 @@ export const auth = {
   register: (data: RegisterRequest) => request<LoginResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
   me: () => request<UserDto>("/me"),
   getInvitation: (token: string) => request<InvitationInfoDto>(`/auth/invitation/${token}`),
+  updateMe: (data: { email?: string; phone?: string }) => request<UserDto>("/me", { method: "PATCH", body: JSON.stringify(data) }),
+  updateOrganisation: (data: { name?: string; website?: string; city?: string; phone?: string; description?: string }) => request<UserDto>("/me/organisation", { method: "PATCH", body: JSON.stringify(data) }),
 };
 
 // ── Categories ──

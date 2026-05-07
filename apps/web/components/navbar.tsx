@@ -98,7 +98,7 @@ export function Navbar() {
                       </Link>
                     </>
                   )}
-                  <Link href="/dashboard" className="flex items-center gap-2 bg-[rgba(0,97,58,0.08)] text-green-primary hover:bg-[rgba(0,97,58,0.15)] py-2 px-4 rounded-full text-sm font-semibold transition-colors">
+                  <Link href="/profil" className="flex items-center gap-2 bg-[rgba(0,97,58,0.08)] text-green-primary hover:bg-[rgba(0,97,58,0.15)] py-2 px-4 rounded-full text-sm font-semibold transition-colors">
                     <User className="w-4 h-4" />{user.firstName}
                   </Link>
                   <button onClick={logout} className="text-gray-500 hover:text-red-500 transition-colors p-2" title="Déconnexion">
