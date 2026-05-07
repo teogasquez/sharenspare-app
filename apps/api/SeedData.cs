@@ -12,6 +12,27 @@ public static class SeedData
         return Environment.GetEnvironmentVariable(envVar) ?? fallback;
     }
 
+    public static void SeedCategories(AppDbContext context)
+    {
+        if (context.Categories.Any()) return;
+
+        var categories = new[]
+        {
+            new Category { Id = Guid.NewGuid(), Name = "Scène", Slug = "scene", Description = "Scènes, podiums, estrades", Icon = "theater", SortOrder = 1 },
+            new Category { Id = Guid.NewGuid(), Name = "Son", Slug = "son", Description = "Sonorisation, enceintes, micros, tables de mixage", Icon = "speaker", SortOrder = 2 },
+            new Category { Id = Guid.NewGuid(), Name = "Lumière", Slug = "lumiere", Description = "Éclairage, projecteurs, lyres, LED", Icon = "lightbulb", SortOrder = 3 },
+            new Category { Id = Guid.NewGuid(), Name = "Barrières & Sécurité", Slug = "barrieres-securite", Description = "Barrières, clôtures, extincteurs, signalisation", Icon = "shield", SortOrder = 4 },
+            new Category { Id = Guid.NewGuid(), Name = "Mobilier", Slug = "mobilier", Description = "Tables, chaises, bancs, comptoirs", Icon = "armchair", SortOrder = 5 },
+            new Category { Id = Guid.NewGuid(), Name = "Électricité", Slug = "electricite", Description = "Groupes électrogènes, rallonges, multiprises, armoires électriques", Icon = "zap", SortOrder = 6 },
+            new Category { Id = Guid.NewGuid(), Name = "Tentes & Structures", Slug = "tentes-structures", Description = "Chapiteaux, barnums, tentes, tonnelles", Icon = "tent", SortOrder = 7 },
+            new Category { Id = Guid.NewGuid(), Name = "Restauration", Slug = "restauration", Description = "Frigos, fours, plaques, tireuses à bière", Icon = "utensils", SortOrder = 8 },
+            new Category { Id = Guid.NewGuid(), Name = "Matériel électrique", Slug = "materiel-electrique", Description = "Adaptateurs, câbles, multiprises, matériel électrique divers", Icon = "plug", SortOrder = 9 },
+        };
+        context.Categories.AddRange(categories);
+        context.SaveChanges();
+        Console.WriteLine($"Seeded {categories.Length} categories.");
+    }
+
     public static void Initialize(AppDbContext context, PasswordHasher passwordHasher)
     {
         if (context.Users.Any() || context.Organisations.Any())

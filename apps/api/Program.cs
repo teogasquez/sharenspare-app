@@ -202,7 +202,9 @@ app.MapControllers();
     {
         Console.WriteLine($"Migration error: {ex.Message}");
     }
-    // Seed data in development
+    // Always seed categories (safe — skipped if already exist)
+    SeedData.SeedCategories(context);
+    // Seed demo data in development only
     if (app.Environment.IsDevelopment())
         SeedData.Initialize(context, passwordHasher);
 }
