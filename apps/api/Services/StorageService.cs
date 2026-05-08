@@ -21,7 +21,8 @@ public class StorageService
         {
             ServiceURL = endpoint,
             ForcePathStyle = true,
-            UseHttp = endpoint.StartsWith("http://")
+            UseHttp = endpoint.StartsWith("http://"),
+            AuthenticationRegion = "auto"
         };
 
         _client = new AmazonS3Client(accessKey, secretKey, config);
